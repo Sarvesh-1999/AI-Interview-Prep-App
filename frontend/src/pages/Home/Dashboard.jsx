@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "../../utils/axiosInstance";
-import { API_PATHS } from "../../utils/apiPaths";
 import { useNavigate } from "react-router-dom";
+import { API_PATHS } from "../../utils/apiPaths";
+import axios from "../../utils/axiosInstance";
 
 const Dashboard = () => {
   const [sessions, setSessions] = useState([]);
@@ -12,19 +12,25 @@ const Dashboard = () => {
   const fetchSessions = async () => {
     try {
       const res = await axios.get(API_PATHS.SESSION.GET_ALL);
-      setSessions(res.data);
+      setSessions(res.data.sessions); // ✅ Fix 1: was res.data
     } catch (err) {
-      console.log(err);
+      console.log(err.response);
     }
   };
 
   const createSession = async () => {
+    console.log("hi");
     if (!role || !experience) return alert("Fill all fields");
 
-    await axios.post(API_PATHS.SESSION.CREATE, {
-      role,
-      experience,
-    });
+    try {
+      await axios.post(API_PATHS.SESSION.CREATE, {
+        role,
+        experience,
+        questions: [],
+      });
+    } catch (error) {
+      console.log(error.response);
+    }
 
     setRole("");
     setExperience("");
@@ -37,7 +43,6 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -47,10 +52,8 @@ const Dashboard = () => {
       </div>
 
       {/* Create Session Card */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm mb-8 ">
-        <h2 className="text-lg font-semibold mb-4">
-          Create New Session
-        </h2>
+      <div className="bg-white p-6 rounded-2xl shadow-sm mb-8">
+        <h2 className="text-lg font-semibold mb-4">Create New Session</h2>
 
         <div className="flex flex-col md:flex-row gap-4">
           <input
@@ -90,17 +93,9 @@ const Dashboard = () => {
               onClick={() => navigate(`/interview/${s._id}`)}
               className="bg-white p-5 rounded-2xl shadow-sm border hover:shadow-md hover:scale-[1.02] transition cursor-pointer"
             >
-              <h2 className="font-semibold text-lg mb-2">
-                {s.role}
-              </h2>
-
-              <p className="text-gray-500 text-sm">
-                {s.experience} years experience
-              </p>
-
-              <div className="mt-4 text-xs text-gray-400">
-                Click to start →
-              </div>
+              <h2 className="font-semibold text-lg mb-2">{s.role}</h2>
+              <p className="text-gray-500 text-sm">{s.experience} experience</p>
+              <div className="mt-4 text-xs text-gray-400">Click to start →</div>
             </div>
           ))}
         </div>

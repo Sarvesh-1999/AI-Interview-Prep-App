@@ -1,7 +1,7 @@
 import { useState } from "react";
-import axios from "../../utils/axiosInstance";
+import { Link, useNavigate } from "react-router-dom";
 import { API_PATHS } from "../../utils/apiPaths";
-import { useNavigate, Link } from "react-router-dom";
+import axios from "../../utils/axiosInstance";
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -16,16 +16,15 @@ const SignUp = () => {
     try {
       await axios.post(API_PATHS.AUTH.SIGNUP, form);
       navigate("/login");
-    } catch {
+    } catch (error) {
+      console.log(error.response);
       alert("Signup failed");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-white to-yellow-50 px-4">
-      
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
-        
         {/* Heading */}
         <h2 className="text-2xl font-bold text-center mb-2">
           Create Account 🚀
