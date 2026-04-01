@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:9000/api";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:9000/api";
 
 export const API_PATHS = {
   AUTH: {
@@ -8,9 +9,15 @@ export const API_PATHS = {
   SESSION: {
     CREATE: `${BASE_URL}/sessions/create`,
     GET_ALL: `${BASE_URL}/sessions/my-sessions`,
+    //! BUG FIX: was missing GET_ONE — InterviewPrep was incorrectly appending
+    //! /:id to GET_ALL (/my-sessions/:id), which hits the wrong route.
+    //! Correct route for a single session is /sessions/:id (GET_ONE below).
+    GET_ONE: `${BASE_URL}/sessions`, // usage: GET_ONE/:id
+    DELETE: `${BASE_URL}/sessions`, // usage: DELETE/:id
   },
   AI: {
-    GENERATE: `${BASE_URL}/ai/generate`,
-    EXPLAIN: `${BASE_URL}/ai/explain`,
+    //! BUG FIX: backend registers /ai/generate-questions, not /ai/generate
+    GENERATE_QUESTIONS: `${BASE_URL}/ai/generate-questions`,
+    EXPLAIN: `${BASE_URL}/ai/generate-explanation`,
   },
 };

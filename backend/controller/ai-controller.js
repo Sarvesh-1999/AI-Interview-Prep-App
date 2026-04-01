@@ -1,4 +1,9 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { GoogleGenAI } from "@google/genai";
+import Question from "../models/question-model.js";
+import Session from "../models/session-model.js";
 import {
   conceptExplainPrompt,
   questionAnswerPrompt,
@@ -6,65 +11,80 @@ import {
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// @desc    Generate interview questions and answers using Gemini
+// @desc    Generate + SAVE interview questions for a session
 // @route   POST /api/ai/generate-questions
 // @access  Private
 export const generateInterviewQuestions = async (req, res) => {
+  console.log("hi");
   try {
-    const { role, experience, topicsToFocus, numberOfQuestions } = req.body;
+    const { sessionId } = req.body; //! read sessionId, not role/experience
 
-    if (!role || !experience || !topicsToFocus || !numberOfQuestions) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing required fields",
-      });
+    if (!sessionId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "sessionId is required" });
     }
 
-    const prompt = questionAnswerPrompt(
-      role,
-      experience,
-      topicsToFocus,
-      numberOfQuestions,
-    );
+    //? 1. fetch session → get role, experience, topicsToFocus
+    const session = await Session.findById(sessionId);
+    if (!session) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Session not found" });
+    }
 
+    if (session.user.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    const { role, experience, topicsToFocus } = session;
+    console.log("session: ", session);
+
+    //? 2. generate via Gemini
+    const prompt = questionAnswerPrompt(role, experience, topicsToFocus, 10);
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-lite",
+      model: "gemini-2.5-flash",
       contents: prompt,
     });
+    console.log("response: ", response);
 
-    let rawText = response.text;
-
-    // Clean it: Remove backticks, json markers, and any extra formatting
-    const cleanedText = rawText
-      .replace(/^```json\s*/, "") // remove starting ```json
-      .replace(/^```\s*/, "") // remove starting ```
-      .replace(/```$/, "") // remove ending ```
-      .replace(/^json\s*/, "") // remove starting json
+    //? 3. clean + parse (your existing logic)
+    const cleanedText = response.text
+      .replace(/^```json\s*/, "")
+      .replace(/^```\s*/, "")
+      .replace(/```$/, "")
+      .replace(/^json\s*/, "")
       .trim();
 
-    // Parse the cleaned JSON
     let questions;
     try {
       questions = JSON.parse(cleanedText);
-    } catch (parseError) {
-      // If parsing fails, try to extract array from text
+    } catch {
       const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        questions = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error("Failed to parse AI response as JSON");
-      }
+      if (jsonMatch) questions = JSON.parse(jsonMatch[0]);
+      else throw new Error("Failed to parse AI response as JSON");
     }
 
-    // Validate the response structure
-    if (!Array.isArray(questions)) {
-      throw new Error("Response is not an array");
-    }
+    if (!Array.isArray(questions)) throw new Error("Response is not an array");
 
-    res.status(200).json({
-      success: true,
-      data: questions,
-    });
+    //! 4. save to DB — was completely missing before
+    const saved = await Question.insertMany(
+      questions.map((q) => ({
+        session: sessionId,
+        question: q.question,
+        answer: q.answer || "",
+        note: "",
+        isPinned: false,
+      })),
+    );
+
+    //! 5. attach IDs to session
+    session.questions.push(...saved.map((q) => q._id));
+    await session.save();
+
+    res.status(201).json({ success: true, data: saved });
   } catch (error) {
     console.error(error);
     res.status(500).json({
