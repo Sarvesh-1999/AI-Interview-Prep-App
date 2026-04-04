@@ -22,7 +22,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://ai-interview-prep-app-eta.vercel.app`",
+    origin: "https://ai-interview-prep-app-eta.vercel.app",
     methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
