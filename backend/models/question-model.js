@@ -8,8 +8,6 @@ const questionsSchema = new mongoose.Schema(
     },
     question: String,
     answer: String,
-    note: String,
-    isPinned: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
