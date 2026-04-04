@@ -20,12 +20,24 @@ connectDB();
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://ai-interview-prep-kwfpbg3d0-sarveshs-projects-eba40f12.vercel.app",
+  "https://ai-interview-prep-app-git-main-sarveshs-projects-eba40f12.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "https://ai-interview-prep-app-eta.vercel.app/api",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  }),
+  })
 );
 
 app.use(express.json());
