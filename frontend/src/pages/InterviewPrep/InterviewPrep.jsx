@@ -9,10 +9,11 @@ import ErrorBanner from "../../components/ErrorBanner";
 import GenerateButton from "../../components/GenerateButton";
 import SkeletonCard from "../../components/SkeletonCard";
 import { API_PATHS } from "../../utils/apiPaths";
+
 import axios from "../../utils/axiosInstance";
 
 const parseError = (err) => {
-  console.log(err.response);
+  console.log(err);
   if (err.response)
     return (
       err.response.data?.message ||
@@ -37,6 +38,7 @@ const InterviewPrep = () => {
       const res = await axios.get(`${API_PATHS.SESSION.GET_ONE}/${id}`);
       setQuestions(res.data.session.questions || []);
     } catch (err) {
+      console.log(err.response);
       setFetchError(parseError(err));
     } finally {
       setLoading(false);

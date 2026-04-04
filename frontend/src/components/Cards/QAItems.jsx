@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 const QAItem = ({ item, onPin }) => {
   const [open, setOpen] = useState(false);
@@ -20,7 +21,7 @@ const QAItem = ({ item, onPin }) => {
 
       {open && (
         <div className="mt-3 text-gray-700">
-          <p>{item.answer}</p>
+          <ReactMarkdown>{item.answer}</ReactMarkdown>
         </div>
       )}
     </div>

@@ -4,7 +4,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="h-screen bg-gradient-to-r from-yellow-100 to-yellow-50 flex flex-col justify-center items-center text-center px-4">
+    <div className="h-screen bg-linear-to-r from-yellow-100 to-yellow-50 flex flex-col justify-center items-center text-center px-4">
 
       <h1 className="text-5xl font-bold mb-6">
         Ace Interviews with{" "}

@@ -50,8 +50,13 @@ export const generateInterviewQuestions = async (req, res) => {
     });
     console.log("response: ", response);
 
-    //? 3. clean + parse (your existing logic)
-    const cleanedText = response.text
+    const parts = response.candidates?.[0]?.content?.parts ?? [];
+    const rawText = parts
+      .filter((p) => !p.thought) // gemini-2.5-flash includes thinking parts; skip them
+      .map((p) => p.text ?? "")
+      .join("");
+
+    const cleanedText = rawText
       .replace(/^```json\s*/, "")
       .replace(/^```\s*/, "")
       .replace(/```$/, "")
@@ -158,5 +163,20 @@ export const generateConceptExplanation = async (req, res) => {
       message: "Failed to generate explanation",
       error: error.message,
     });
+  }
+};
+
+export const getSessionById = async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id).populate("questions"); // ← this was missing
+
+    if (!session)
+      return res
+        .status(404)
+        .json({ success: false, message: "Session not found" });
+
+    res.status(200).json({ success: true, session });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
