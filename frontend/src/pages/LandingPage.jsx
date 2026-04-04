@@ -12,8 +12,7 @@ const LandingPage = () => {
       </h1>
 
       <p className="text-gray-600 max-w-xl mb-6">
-        Generate role-specific questions, expand answers, and master concepts
-        with AI assistance.
+        G 
       </p>
 
       <button
