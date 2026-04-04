@@ -36,11 +36,13 @@ app.use(
       }
     },
     methods: ["GET", "POST", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
-  })
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Access-Control-Allow-Origin",
+    ],
+  }),
 );
-
-app.options("*", cors());
 
 app.use(express.json());
 
