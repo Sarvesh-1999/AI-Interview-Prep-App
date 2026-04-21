@@ -14,7 +14,3 @@ const Session = mongoose.model("Session", sessionSchema);
 
 export default Session;
 
-
-let seesiojn = {
-  quetions: [{q1}, {q2}]
-}
